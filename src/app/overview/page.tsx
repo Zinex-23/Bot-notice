@@ -17,6 +17,7 @@ import {
   TrendingUp,
   Sparkles,
 } from "lucide-react";
+import { InstantReportButton } from "@/components/InstantReportButton";
 
 export default function OverviewPage() {
   const [data, setData] = useState<any>(null);
@@ -87,10 +88,12 @@ export default function OverviewPage() {
           </p>
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+          <InstantReportButton variant="primary" />
+
           <Link
             href="/planner"
-            className="px-5 py-2.5 rounded-xl text-sm font-semibold bg-white text-blue-700 hover:bg-blue-50 shadow-md transition-all flex items-center space-x-2"
+            className="px-4 sm:px-5 py-2.5 rounded-xl text-sm font-semibold bg-white/15 hover:bg-white/25 text-white backdrop-blur-md border border-white/20 transition-all flex items-center space-x-2"
           >
             <CalendarClock className="w-4 h-4" />
             <span>Mở Lịch 24 Giờ</span>

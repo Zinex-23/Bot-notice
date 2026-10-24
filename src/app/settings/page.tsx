@@ -15,6 +15,7 @@ import {
   Play,
   Pause,
 } from "lucide-react";
+import { InstantReportButton } from "@/components/InstantReportButton";
 
 export default function SettingsPage() {
   const [telegramStatus, setTelegramStatus] = useState<any>(null);
@@ -301,14 +302,7 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={handleTestReport}
-            disabled={isTestingReport || !telegramStatus?.isPaired}
-            className="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-blue-600 bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/50 border border-blue-200 dark:border-blue-800 disabled:opacity-50 transition-colors"
-          >
-            {isTestingReport ? "Đang gửi..." : "Gửi báo cáo thử"}
-          </button>
+          <InstantReportButton variant="outline" />
         </div>
 
         {testReportResult && (

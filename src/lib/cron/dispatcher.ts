@@ -2,6 +2,7 @@ import { InlineKeyboard } from "grammy";
 import { prisma } from "../prisma";
 import { bot } from "../telegram/bot";
 import {
+  combineVietnamDateAndTime,
   getVietnamDateString,
   getVietnamTimeComponents,
   timeStringToMinutes,
@@ -111,32 +112,32 @@ export async function dispatchDueNotifications() {
       const targetWater = user.settings?.waterTargetMl || 1500;
 
       messageText =
-        `💧 **NHẮC UỐNG NƯỚC**\n\n` +
+        `💧 <b>NHẮC UỐNG NƯỚC</b>\n\n` +
         `Đến giờ uống nước rồi!\n\n` +
-        `🥛 **Mục tiêu:** ${target || "250 ml"}\n` +
-        `📊 **Đã uống hôm nay:** ${currentWater.toLocaleString()} / ${targetWater.toLocaleString()} ml\n\n` +
-        `_Hãy uống một cốc nước để giữ năng lượng sảng khoái nhé!_`;
+        `🥛 <b>Mục tiêu:</b> ${target || "250 ml"}\n` +
+        `📊 <b>Đã uống hôm nay:</b> ${currentWater.toLocaleString()} / ${targetWater.toLocaleString()} ml\n\n` +
+        `<i>Hãy uống một cốc nước để giữ năng lượng sảng khoái nhé!</i>`;
 
       keyboard
         .text("✅ Đã uống", `done:${occurrence.id}`)
-        .text("⏰ Nhắc sau 15 phút", `snooze:${occurrence.id}`)
+        .text("⏰ Nhắc sau 15p", `snooze:${occurrence.id}`)
         .row()
         .text("⏭ Bỏ qua", `skip:${occurrence.id}`);
     } else {
       messageText =
-        `${emoji} **NHẮC LỊCH: ${task.title.toUpperCase()}**\n\n` +
-        `⏰ **Thời gian:** \`${startTime}\``;
+        `${emoji} <b>NHẮC LỊCH: ${task.title.toUpperCase()}</b>\n\n` +
+        `⏰ <b>Thời gian:</b> <code>${startTime}</code>`;
 
       if (occurrence.schedule?.durationMinutes) {
         messageText += ` (${occurrence.schedule.durationMinutes} phút)`;
       }
 
       if (target) {
-        messageText += `\n🎯 **Mục tiêu:** ${target}`;
+        messageText += `\n🎯 <b>Mục tiêu:</b> ${target}`;
       }
 
       if (task.description) {
-        messageText += `\n📝 **Ghi chú:** ${task.description}`;
+        messageText += `\n📝 <b>Ghi chú:</b> ${task.description}`;
       }
 
       keyboard
@@ -148,7 +149,7 @@ export async function dispatchDueNotifications() {
 
     try {
       const sentMsg = await bot.api.sendMessage(telegram.chatId, messageText, {
-        parse_mode: "Markdown",
+        parse_mode: "HTML",
         reply_markup: keyboard,
       });
 
@@ -243,8 +244,8 @@ export async function checkAndSendAutomatedReports() {
  */
 export async function sendDailyReport(userId: string, chatId: string) {
   const todayStr = getVietnamDateString();
-  const startOfDay = new Date(new Date().setHours(0, 0, 0, 0));
-  const endOfDay = new Date(new Date().setHours(23, 59, 59, 999));
+  const startOfDay = combineVietnamDateAndTime(todayStr, "00:00");
+  const endOfDay = combineVietnamDateAndTime(todayStr, "23:59:59");
 
   const occurrences = await prisma.taskOccurrence.findMany({
     where: {
@@ -280,25 +281,27 @@ export async function sendDailyReport(userId: string, chatId: string) {
   const studyMin = studyOccs.reduce((sum, o) => sum + (o.schedule?.durationMinutes || 0), 0);
 
   const text =
-    `📊 **TỔNG KẾT HÔM NAY (${todayStr})**\n\n` +
-    `✅ Hoàn thành: **${completed}/${total}** (${pct}%)\n` +
-    `💧 Uống nước: **${waterTotal.toLocaleString()} / ${waterTarget.toLocaleString()} ml**\n` +
-    `🏋️ Tập thể dục: **${exerciseMin} phút**\n` +
-    `📚 Học tập: **${studyMin} phút**\n` +
+    `📊 <b>TỔNG KẾT HÔM NAY (${todayStr})</b>\n\n` +
+    `✅ Hoàn thành: <b>${completed}/${total}</b> (${pct}%)\n` +
+    `💧 Uống nước: <b>${waterTotal.toLocaleString()} / ${waterTarget.toLocaleString()} ml</b>\n` +
+    `🏋️ Tập thể dục: <b>${exerciseMin} phút</b>\n` +
+    `📚 Học tập: <b>${studyMin} phút</b>\n` +
     `🔥 Tiếp tục giữ vững phong độ nhé!\n\n` +
     `👉 Bấm bên dưới để xem biểu đồ chi tiết:`;
 
   const keyboard = new InlineKeyboard().url(
     "📊 Mở Dashboard",
-    `${process.env.APP_BASE_URL || "http://localhost:3000"}/overview`
+    `${process.env.APP_BASE_URL || "https://bot-notice.vercel.app"}/overview`
   );
 
   try {
     await bot.api.sendMessage(chatId, text, {
-      parse_mode: "Markdown",
+      parse_mode: "HTML",
       reply_markup: keyboard,
     });
   } catch (err) {
     console.error("Failed to send daily report:", err);
+    throw err;
   }
 }
+

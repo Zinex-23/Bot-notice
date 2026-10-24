@@ -12,6 +12,7 @@ import {
   Award,
   CheckCircle2,
 } from "lucide-react";
+import { InstantReportButton } from "@/components/InstantReportButton";
 import {
   BarChart,
   Bar,
@@ -81,37 +82,41 @@ export default function AnalyticsPage() {
           </p>
         </div>
 
-        <div className="flex items-center p-1 rounded-xl bg-slate-100 dark:bg-zinc-800 text-xs font-semibold">
-          <button
-            onClick={() => setTab("DAILY")}
-            className={`px-3 py-1.5 rounded-lg transition-all ${
-              tab === "DAILY"
-                ? "bg-white dark:bg-zinc-700 text-blue-600 dark:text-blue-400 shadow-sm"
-                : "text-slate-500 hover:text-slate-800 dark:hover:text-zinc-200"
-            }`}
-          >
-            Hôm nay
-          </button>
-          <button
-            onClick={() => setTab("WEEKLY")}
-            className={`px-3 py-1.5 rounded-lg transition-all ${
-              tab === "WEEKLY"
-                ? "bg-white dark:bg-zinc-700 text-blue-600 dark:text-blue-400 shadow-sm"
-                : "text-slate-500 hover:text-slate-800 dark:hover:text-zinc-200"
-            }`}
-          >
-            7 Ngày qua
-          </button>
-          <button
-            onClick={() => setTab("MONTHLY")}
-            className={`px-3 py-1.5 rounded-lg transition-all ${
-              tab === "MONTHLY"
-                ? "bg-white dark:bg-zinc-700 text-blue-600 dark:text-blue-400 shadow-sm"
-                : "text-slate-500 hover:text-slate-800 dark:hover:text-zinc-200"
-            }`}
-          >
-            Tháng này
-          </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <InstantReportButton variant="outline" />
+
+          <div className="flex items-center p-1 rounded-xl bg-slate-100 dark:bg-zinc-800 text-xs font-semibold">
+            <button
+              onClick={() => setTab("DAILY")}
+              className={`px-3 py-1.5 rounded-lg transition-all ${
+                tab === "DAILY"
+                  ? "bg-white dark:bg-zinc-700 text-blue-600 dark:text-blue-400 shadow-sm"
+                  : "text-slate-500 hover:text-slate-800 dark:hover:text-zinc-200"
+              }`}
+            >
+              Hôm nay
+            </button>
+            <button
+              onClick={() => setTab("WEEKLY")}
+              className={`px-3 py-1.5 rounded-lg transition-all ${
+                tab === "WEEKLY"
+                  ? "bg-white dark:bg-zinc-700 text-blue-600 dark:text-blue-400 shadow-sm"
+                  : "text-slate-500 hover:text-slate-800 dark:hover:text-zinc-200"
+              }`}
+            >
+              7 Ngày qua
+            </button>
+            <button
+              onClick={() => setTab("MONTHLY")}
+              className={`px-3 py-1.5 rounded-lg transition-all ${
+                tab === "MONTHLY"
+                  ? "bg-white dark:bg-zinc-700 text-blue-600 dark:text-blue-400 shadow-sm"
+                  : "text-slate-500 hover:text-slate-800 dark:hover:text-zinc-200"
+              }`}
+            >
+              Tháng này
+            </button>
+          </div>
         </div>
       </div>
 

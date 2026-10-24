@@ -99,7 +99,7 @@ function HourSlot({
       }`}
     >
       {/* Hour label */}
-      <div className="w-16 flex-shrink-0 text-right pr-4 text-xs font-mono font-medium text-slate-400 dark:text-zinc-500 pt-1">
+      <div className="w-14 sm:w-16 flex-shrink-0 text-right pr-2 sm:pr-4 text-xs font-mono font-medium text-slate-400 dark:text-zinc-500 pt-1">
         {hourStr}
       </div>
 
@@ -316,7 +316,7 @@ export function Timeline24Hour({
           {/* Live Current Time Red Bar */}
           <div
             style={{ top: `${currentLineTop}px` }}
-            className="absolute left-16 right-0 z-20 pointer-events-none flex items-center"
+            className="absolute left-14 sm:left-16 right-0 z-20 pointer-events-none flex items-center"
           >
             <div className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-sm shadow-rose-500/50 -ml-1.5"></div>
             <div className="flex-1 h-[2px] bg-rose-500/80 shadow-sm"></div>
@@ -332,7 +332,7 @@ export function Timeline24Hour({
 
                 {/* Scheduled Items in this hour */}
                 {hourItems.length > 0 && (
-                  <div className="absolute left-20 right-4 top-2 z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                  <div className="absolute left-16 sm:left-20 right-2 sm:right-4 top-2 z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                     {hourItems.map((item) => (
                       <DraggableTaskCard
                         key={item.id}
