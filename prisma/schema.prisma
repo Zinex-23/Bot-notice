@@ -1,0 +1,269 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String?  @unique
+  name         String   @default("User")
+  passwordHash String?
+  timezone     String   @default("Asia/Ho_Chi_Minh")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  telegramConnection  TelegramConnection?
+  tasks               Task[]
+  habits              Habit[]
+  waterIntakes        WaterIntake[]
+  reportConfiguration ReportConfiguration?
+  dailySummaries      DailySummary[]
+  weeklySummaries     WeeklySummary[]
+  monthlySummaries    MonthlySummary[]
+  settings            ApplicationSettings?
+}
+
+model TelegramConnection {
+  id                   String    @id @default(cuid())
+  userId               String    @unique
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chatId               String?   @unique
+  username             String?
+  firstName            String?
+  pairedAt             DateTime?
+  pairingCode          String?   @unique
+  pairingCodeExpiresAt DateTime?
+  isActive             Boolean   @default(true)
+  isPaused             Boolean   @default(false)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+}
+
+model Task {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title           String
+  description     String?
+  category        String    @default("OTHER") // WATER, EXERCISE, STUDY, WORK, HEALTH, OTHER
+  priority        String    @default("MEDIUM") // LOW, MEDIUM, HIGH
+  targetValue     Float?
+  targetUnit      String? // ml, phút, lần, trang
+  isActive        Boolean   @default(true)
+  telegramEnabled Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime?
+
+  schedules   TaskSchedule[]
+  occurrences TaskOccurrence[]
+  completions TaskCompletion[]
+}
+
+model TaskSchedule {
+  id                 String    @id @default(cuid())
+  taskId             String
+  task               Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  startTime          String // "HH:mm" e.g. "09:30"
+  durationMinutes    Int       @default(0)
+  timezone           String    @default("Asia/Ho_Chi_Minh")
+  recurrenceType     String    @default("DAILY") // ONCE, DAILY, WEEKDAYS, WEEKENDS, CUSTOM, WEEKLY, MONTHLY
+  recurrenceDays     String    @default("[]") // JSON string e.g. "[1,2,3,4,5]" (0=Sun, 1=Mon, ..., 6=Sat)
+  recurrenceInterval Int       @default(1)
+  effectiveFrom      DateTime  @default(now())
+  effectiveUntil     DateTime?
+  snoozeMinutes      Int       @default(15)
+  allowSnooze        Boolean   @default(true)
+  isDeleted          Boolean   @default(false)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  occurrences TaskOccurrence[]
+}
+
+model TaskOccurrence {
+  id              String        @id @default(cuid())
+  taskId          String
+  task            Task          @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  scheduleId      String?
+  schedule        TaskSchedule? @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
+  scheduledAt     DateTime // UTC scheduled time
+  completedAt     DateTime?
+  status          String        @default("PENDING") // PENDING, COMPLETED, SKIPPED, SNOOZED, MISSED
+  snoozedUntil    DateTime?
+  completionValue Float?
+  notes           String?
+  source          String? // WEB, TELEGRAM
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  completion       TaskCompletion?
+  notificationJobs NotificationJob[]
+
+  @@index([scheduledAt])
+  @@index([status])
+}
+
+model TaskCompletion {
+  id                String         @id @default(cuid())
+  occurrenceId      String         @unique
+  occurrence        TaskOccurrence @relation(fields: [occurrenceId], references: [id], onDelete: Cascade)
+  taskId            String
+  task              Task           @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  completedAt       DateTime       @default(now())
+  value             Float?
+  source            String         @default("WEB") // WEB, TELEGRAM
+  telegramMessageId String?
+  createdAt         DateTime       @default(now())
+}
+
+model Habit {
+  id                 String   @id @default(cuid())
+  userId             String
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name               String
+  category           String   @default("OTHER")
+  targetDaysPerWeek  Int      @default(7)
+  currentStreak      Int      @default(0)
+  longestStreak      Int      @default(0)
+  lastCompletedDate  String? // "YYYY-MM-DD"
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model WaterIntake {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  occurrenceId String?  @unique
+  amountMl     Int
+  loggedAt     DateTime @default(now())
+  date         String // "YYYY-MM-DD" in Asia/Ho_Chi_Minh
+  source       String   @default("WEB") // WEB, TELEGRAM
+
+  @@index([userId, date])
+}
+
+model NotificationJob {
+  id           String         @id @default(cuid())
+  occurrenceId String
+  occurrence   TaskOccurrence @relation(fields: [occurrenceId], references: [id], onDelete: Cascade)
+  scheduledFor DateTime // UTC time to send
+  status       String         @default("PENDING") // PENDING, PROCESSING, SENT, FAILED, CANCELLED
+  payloadJson  String?
+  sentAt       DateTime?
+  retryCount   Int            @default(0)
+  errorLog     String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  deliveries NotificationDelivery[]
+
+  @@index([status, scheduledFor])
+}
+
+model NotificationDelivery {
+  id                String          @id @default(cuid())
+  jobId             String
+  job               NotificationJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  telegramMessageId String?
+  chatId            String?
+  sentAt            DateTime        @default(now())
+  status            String          @default("DELIVERED")
+}
+
+model ReportConfiguration {
+  id               String    @id @default(cuid())
+  userId           String    @unique
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dailyEnabled     Boolean   @default(true)
+  dailyTime        String    @default("22:00")
+  dailyWithImage   Boolean   @default(true)
+  dailyUnfinished  Boolean   @default(true)
+  weeklyEnabled    Boolean   @default(true)
+  weeklyDay        Int       @default(0) // 0=Sunday
+  weeklyTime       String    @default("21:45")
+  weeklyWithImage  Boolean   @default(true)
+  monthlyEnabled   Boolean   @default(true)
+  monthlyTime      String    @default("22:15")
+  monthlyWithImage Boolean   @default(true)
+  lastDailySentAt  DateTime?
+  lastWeeklySentAt DateTime?
+  lastMonthlySentAt DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+model DailySummary {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date           String // "YYYY-MM-DD"
+  totalTasks     Int      @default(0)
+  completedTasks Int      @default(0)
+  skippedTasks   Int      @default(0)
+  missedTasks    Int      @default(0)
+  completionRate Float    @default(0.0)
+  waterTotalMl   Int      @default(0)
+  waterTargetMl  Int      @default(1500)
+  exerciseMin    Int      @default(0)
+  studyMin       Int      @default(0)
+  streakDays     Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([userId, date])
+}
+
+model WeeklySummary {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  weekNumber     Int
+  year           Int
+  completionRate Float    @default(0.0)
+  totalTasks     Int      @default(0)
+  completedTasks Int      @default(0)
+  waterAverageMl Int      @default(0)
+  exerciseTotal  Int      @default(0)
+  studyTotal     Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([userId, year, weekNumber])
+}
+
+model MonthlySummary {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  month          Int
+  year           Int
+  completionRate Float    @default(0.0)
+  totalTasks     Int      @default(0)
+  completedTasks Int      @default(0)
+  waterAverageMl Int      @default(0)
+  exerciseHours  Float    @default(0.0)
+  studyHours     Float    @default(0.0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([userId, year, month])
+}
+
+model ApplicationSettings {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  waterTargetMl Int      @default(1500)
+  timezone      String   @default("Asia/Ho_Chi_Minh")
+  theme         String   @default("system")
+  isInitialized Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
