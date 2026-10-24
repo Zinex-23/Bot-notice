@@ -27,6 +27,26 @@ export default function SettingsPage() {
   const [isTestingReport, setIsTestingReport] = useState(false);
   const [testReportResult, setTestReportResult] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [isSettingWebhook, setIsSettingWebhook] = useState(false);
+  const [webhookMessage, setWebhookMessage] = useState<string | null>(null);
+
+  const handleSetupWebhook = async () => {
+    setIsSettingWebhook(true);
+    setWebhookMessage(null);
+    try {
+      const res = await fetch("/api/telegram/setup-webhook", { method: "POST" });
+      const data = await res.json();
+      if (res.ok) {
+        setWebhookMessage(data.message || "✓ Đã kích hoạt Webhook thành công! Bot đã sẵn sàng nhận tin nhắn.");
+      } else {
+        setWebhookMessage(`Lỗi: ${data.error}`);
+      }
+    } catch (err: unknown) {
+      setWebhookMessage(err instanceof Error ? err.message : "Thất bại");
+    } finally {
+      setIsSettingWebhook(false);
+    }
+  };
 
   const loadAll = async () => {
     setIsLoading(true);
@@ -207,6 +227,12 @@ export default function SettingsPage() {
               Để bảo mật tài khoản cá nhân, DailyFlow sử dụng mã xác thực một lần (OTP 6 số) có hiệu lực trong 15 phút. Không cho phép nhập ID trực tiếp nếu không chứng minh quyền sở hữu.
             </p>
 
+            {webhookMessage && (
+              <div className="p-3.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 text-xs border border-blue-200 dark:border-blue-900">
+                {webhookMessage}
+              </div>
+            )}
+
             {pairingCode || telegramStatus?.pairingCode ? (
               <div className="p-5 rounded-2xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 space-y-3">
                 <span className="text-xs font-semibold text-blue-700 dark:text-blue-300">
@@ -225,15 +251,32 @@ export default function SettingsPage() {
                   </p>
                 </div>
               </div>
-            ) : (
+            ) : null}
+
+            <div className="flex flex-wrap items-center gap-3 pt-1">
               <button
+                type="button"
+                onClick={handleSetupWebhook}
+                disabled={isSettingWebhook}
+                className="px-4 py-2.5 rounded-xl text-xs font-semibold text-blue-600 bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/50 border border-blue-200 dark:border-blue-800 disabled:opacity-50 transition-all flex items-center space-x-1.5"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>
+                  {isSettingWebhook
+                    ? "Đang kết nối Webhook..."
+                    : "⚡ Kích hoạt Webhook Bot (Bắt buộc lần đầu)"}
+                </span>
+              </button>
+
+              <button
+                type="button"
                 onClick={handleGeneratePairingCode}
                 className="px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all flex items-center space-x-2"
               >
                 <Key className="w-4 h-4" />
-                <span>Tạo mã kết nối Telegram</span>
+                <span>Lấy mã kết nối mới</span>
               </button>
-            )}
+            </div>
           </div>
         )}
       </div>
