@@ -42,9 +42,13 @@ Ngay sau khi kết nối hoặc khi người dùng gõ `/start`, `/help`, bot s�
 ├─────────────────────────┼─────────────────────────┤
 │     📊 Báo cáo ngay     │     ⏳ Việc chưa xong   │
 ├─────────────────────────┼─────────────────────────┤
-│    🌐 Web Dashboard     │       ❓ Trợ giúp       │
+│  🌐 Mở Web DailyFlow   │       ❓ Trợ giúp       │
 └─────────────────────────┴─────────────────────────┘
 ```
+
+> [!TIP]
+> **Mở Web App trực tiếp trong Telegram (Telegram Mini App)**:
+> Nút `🌐 Mở Web DailyFlow` được cấu hình dưới dạng **`web_app` button**. Khi bấm, Telegram sẽ mở trực tiếp ứng dụng web DailyFlow dưới dạng cửa sổ trượt (in-app modal) với đầy đủ thanh điều hướng dưới đáy (Mobile Bottom Bar), lịch 24 giờ và bảng thống kê mà người dùng không cần phải thoát ra trình duyệt ngoài!
 
 ### Xử lý tin nhắn văn bản tự nhiên (`bot.hears`):
 Người dùng không cần nhớ cú pháp dấu gạch chéo (`/`). Khi người dùng chạm vào nút hoặc gõ từ ngữ tương tự, hệ thống tự động nhận diện và phản hồi:
@@ -57,7 +61,7 @@ Người dùng không cần nhớ cú pháp dấu gạch chéo (`/`). Khi ngư�
 
 ---
 
-## 3. NÚT TƯƠNG TÁC DƯỚI TIN NHẮN (INLINE KEYBOARD)
+## 3. NÚT TƯƠNG TÁC DƯỚI TIN NHẮN (INLINE KEYBOARD & MINI APP)
 
 Dưới mỗi tin nhắn thông báo nhắc việc hoặc tiến độ nước uống, bot tự động đính kèm các nút bấm tương tác nhanh:
 
