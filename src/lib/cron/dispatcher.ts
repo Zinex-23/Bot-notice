@@ -289,10 +289,13 @@ export async function sendDailyReport(userId: string, chatId: string) {
     `🔥 Tiếp tục giữ vững phong độ nhé!\n\n` +
     `👉 Bấm bên dưới để xem biểu đồ chi tiết:`;
 
-  const keyboard = new InlineKeyboard().url(
-    "📊 Mở Dashboard",
-    `${process.env.APP_BASE_URL || "https://bot-notice.vercel.app"}/overview`
-  );
+  const keyboard = new InlineKeyboard()
+    .webApp(
+      "📊 Mở Dashboard (Trong Telegram)",
+      `${process.env.APP_BASE_URL || "https://bot-notice.vercel.app"}/overview`
+    )
+    .row()
+    .url("🌐 Mở Trình Duyệt Ngoài", `${process.env.APP_BASE_URL || "https://bot-notice.vercel.app"}/overview`);
 
   try {
     await bot.api.sendMessage(chatId, text, {

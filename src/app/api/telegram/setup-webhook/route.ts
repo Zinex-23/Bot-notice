@@ -37,6 +37,19 @@ export async function POST(request: Request) {
       drop_pending_updates: false,
     });
 
+    // Cấu hình nút Menu chính thức trên Telegram thành Web App (Mini App)
+    try {
+      await bot.api.setChatMenuButton({
+        menu_button: {
+          type: "web_app",
+          text: "DailyFlow Web",
+          web_app: { url: baseUrl },
+        },
+      });
+    } catch (menuErr) {
+      console.warn("Set chat menu button warning:", menuErr);
+    }
+
     const info = await bot.api.getWebhookInfo();
 
     return NextResponse.json({

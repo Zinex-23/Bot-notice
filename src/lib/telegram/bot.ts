@@ -36,7 +36,7 @@ export const mainReplyKeyboard = new Keyboard()
   .text("📊 Báo cáo ngay")
   .text("⏳ Việc chưa xong")
   .row()
-  .text("🌐 Web Dashboard")
+  .webApp("🌐 Mở Web DailyFlow", process.env.APP_BASE_URL || "https://bot-notice.vercel.app")
   .text("❓ Trợ giúp")
   .resized()
   .persistent();
@@ -127,7 +127,7 @@ export async function handleTodayCommand(ctx: any) {
   text += `\n📊 Tiến độ: <b>${done}/${total}</b> (${pct}%)`;
 
   const keyboard = new InlineKeyboard()
-    .url("🌐 Mở Lịch 24 Giờ", `${process.env.APP_BASE_URL || "https://bot-notice.vercel.app"}/planner`)
+    .webApp("🌐 Mở Lịch 24 Giờ", `${process.env.APP_BASE_URL || "https://bot-notice.vercel.app"}/planner`)
     .text("🔄 Làm mới", "refresh_today");
 
   return ctx.reply(text, {
@@ -168,7 +168,7 @@ export async function handleWaterCommand(ctx: any) {
     .text("🥛 +250 ml", "water_add:250")
     .text("🍶 +500 ml", "water_add:500")
     .row()
-    .url("📊 Xem chi tiết", `${process.env.APP_BASE_URL || "https://bot-notice.vercel.app"}/water`);
+    .webApp("📊 Xem chi tiết (Trong Telegram)", `${process.env.APP_BASE_URL || "https://bot-notice.vercel.app"}/water`);
 
   return ctx.reply(text, { parse_mode: "HTML", reply_markup: keyboard });
 }
@@ -223,10 +223,10 @@ export async function handleReportCommand(ctx: any) {
     `🔥 Chuỗi duy trì: <b>5 ngày</b>\n\n` +
     `<i>Tiếp tục giữ vững phong độ nhé!</i>`;
 
-  const keyboard = new InlineKeyboard().url(
-    "📊 Mở Dashboard",
-    `${process.env.APP_BASE_URL || "https://bot-notice.vercel.app"}/overview`
-  );
+  const keyboard = new InlineKeyboard()
+    .webApp("📊 Mở Dashboard (Trong Telegram)", `${process.env.APP_BASE_URL || "https://bot-notice.vercel.app"}/overview`)
+    .row()
+    .url("🌐 Mở Trình Duyệt Ngoài", `${process.env.APP_BASE_URL || "https://bot-notice.vercel.app"}/overview`);
 
   return ctx.reply(text, { parse_mode: "HTML", reply_markup: keyboard });
 }
@@ -275,9 +275,16 @@ export async function handlePendingCommand(ctx: any) {
 
 export async function handleDashboardCommand(ctx: any) {
   const url = process.env.APP_BASE_URL || "https://bot-notice.vercel.app";
-  const keyboard = new InlineKeyboard().url("🚀 Mở DailyFlow Web", url);
+  const keyboard = new InlineKeyboard()
+    .webApp("🚀 Mở Web App (Trực tiếp trong Telegram)", url)
+    .row()
+    .url("🌐 Mở Bằng Trình Duyệt Ngoài", url);
+
   return ctx.reply(
-    `🌐 <b>BẢNG ĐIỀU KHIỂN DAILYFLOW</b>\n\nTruy cập trung tâm điều khiển của bạn tại:\n${url}`,
+    `🌐 <b>BẢNG ĐIỀU KHIỂN DAILYFLOW</b>\n\n` +
+      `Bạn có thể xem và quản lý toàn bộ lịch trình 24 giờ trực tiếp ngay trong Telegram:\n\n` +
+      `👉 Bấm <b>"Mở Web App"</b> để mở cửa sổ ứng dụng trực tiếp trong Telegram mà không cần thoát chat!\n` +
+      `👉 Bấm <b>"Mở Bằng Trình Duyệt Ngoài"</b> nếu bạn muốn mở bằng Safari/Chrome.`,
     {
       reply_markup: keyboard,
       parse_mode: "HTML",
@@ -542,7 +549,7 @@ bot.on("callback_query:data", async (ctx) => {
         escapeHtml(originalText) +
         `\n\n━━━━━━━━━━━━━━━━━━━━\n✅ <b>ĐÃ HOÀN THÀNH</b> lúc ${timeNow}`;
 
-      const keyboard = new InlineKeyboard().url(
+      const keyboard = new InlineKeyboard().webApp(
         "📊 Mở DailyFlow",
         process.env.APP_BASE_URL || "https://bot-notice.vercel.app"
       );
